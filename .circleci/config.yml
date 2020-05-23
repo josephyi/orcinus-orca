@@ -53,6 +53,7 @@ jobs:
           at: /tmp/workspace
       - setup_remote_docker:
           version: 19.03.8
+      - docker/check
       - run:
           name: Load archived Docker image
           command: docker load -i /tmp/workspace/image.tar
