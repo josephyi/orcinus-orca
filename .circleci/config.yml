@@ -1,6 +1,17 @@
 version: 2.1
+
 orbs:
   node: circleci/node@1.1.6
+  docker: circleci/docker@1.0.1
+commands:
+  deploy-by-tag:
+    description: Simulate a deploy command
+    parameters:
+      tag:
+        description: Image tag
+        type: string
+    steps:
+      - run: echo "Deploying $(git rev-list -n 1 << parameters.tag >>)"
 jobs:
   build-and-test:
     executor:
@@ -11,7 +22,66 @@ jobs:
           steps:
             - run: npm install
             - run: npm test
+  build-docker-image:
+    executor:
+      name: docker/docker
+    environment:
+      DOCKER_BUILDKIT: "1"
+      IMAGE_NAME: "josephyi/orcinus-orca"
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 19.03.8
+      - attach_workspace:
+          at: /tmp/workspace
+      - docker/build:
+          image: $IMAGE_NAME
+          extra_build_args: --progress=plain
+      - run:
+          name: Archive Docker image
+          command: docker save -o image.tar $IMAGE_NAME
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./image.tar
+  publish-image:
+    executor: docker/docker
+    environment:
+      IMAGE_NAME: "josephyi/orcinus-orca"
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - setup_remote_docker:
+          version: 19.03.8
+      - docker/check
+      - run:
+          name: Load archived Docker image
+          command: docker load -i /tmp/workspace/image.tar
+      - docker/push:
+          image: $IMAGE_NAME
+  deploy-by-tag:
+    executor: docker/docker
+    steps:
+      - deploy-by-tag:
+          tag: $CIRCLE_TAG
 workflows:
-    build-and-test:
-      jobs:
-        - build-and-test
+  build-and-test:
+    jobs:
+      - build-and-test
+      - build-docker-image
+      - publish-image:
+          requires:
+            - build-and-test
+            - build-docker-image
+  deploy:
+    jobs:
+      - approve:
+          type: approval
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - deploy-by-tag:
+          requires:
+            - approve
