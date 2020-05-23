@@ -14,6 +14,7 @@ COPY tsconfig.build.json .
 RUN yarn build
 
 FROM builder as runner
-COPY --from=prod_deps node_modules ./node_modules
-COPY --from=builder dist ./dist
+USER node
+COPY --chown=node:node --from=prod_deps node_modules ./node_modules
+COPY --chown=node:node --from=builder dist ./dist
 CMD ["node", "dist/main.js"]
