@@ -3,6 +3,15 @@ version: 2.1
 orbs:
   node: circleci/node@1.1.6
   docker: circleci/docker@1.0.1
+commands:
+  deploy-by-tag:
+    description: Simulate a deploy command
+    parameters:
+      tag:
+        description: Image tag
+        type: string
+    steps:
+      - run: echo "Deploying $(git rev-list -n 1 << parameters.tag >>)"
 jobs:
   build-and-test:
     executor:
@@ -44,19 +53,34 @@ jobs:
           at: /tmp/workspace
       - setup_remote_docker:
           version: 19.03.8
-      - docker/check
       - run:
           name: Load archived Docker image
           command: docker load -i /tmp/workspace/image.tar
       - docker/push:
           image: $IMAGE_NAME
-
+  deploy-by-tag:
+    executor: docker/docker
+    steps:
+      - deploy-by-tag:
+          tag: $CIRCLE_TAG
 workflows:
-    build-and-test:
-      jobs:
-        - build-and-test
-        - build-docker-image
-        - publish-image:
-            requires:
-              - build-and-test
-              - build-docker-image
+  build-and-test:
+    jobs:
+      - build-and-test
+      - build-docker-image
+      - publish-image:
+          requires:
+            - build-and-test
+            - build-docker-image
+  deploy:
+    jobs:
+      - approve:
+          type: approval
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+      - deploy-by-tag:
+          requires:
+            - approve
