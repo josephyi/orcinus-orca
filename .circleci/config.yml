@@ -85,3 +85,8 @@ workflows:
       - deploy-by-tag:
           requires:
             - approve
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
