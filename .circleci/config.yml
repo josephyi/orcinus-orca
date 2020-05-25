@@ -11,8 +11,7 @@ commands:
         description: Image tag
         type: string
     steps:
-      - checkout
-      - run: echo "Deploying $(git rev-list -n 1 << parameters.tag >>)"
+      - run: echo "Deploying << parameters.tag >>"
 jobs:
   build-and-test:
     executor:
@@ -63,8 +62,9 @@ jobs:
   deploy-by-tag:
     executor: docker/docker
     steps:
+      - checkout
       - deploy-by-tag:
-          tag: $CIRCLE_TAG
+          tag: $(git rev-list -n 1 $CIRCLE_TAG)
 workflows:
   build-and-test:
     jobs:
