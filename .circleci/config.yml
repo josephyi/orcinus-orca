@@ -64,7 +64,7 @@ jobs:
     steps:
       - checkout
       - deploy-by-tag:
-          tag: $(git rev-list -n 1 $CIRCLE_TAG)
+          tag: $CIRCLE_SHA1
 workflows:
   build-and-test:
     jobs:
