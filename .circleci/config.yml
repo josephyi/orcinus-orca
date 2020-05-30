@@ -12,16 +12,47 @@ commands:
         type: string
     steps:
       - run: echo "Deploying << parameters.tag >>"
+  restore-cache:
+    description: Restores cache
+    steps:
+      - restore_cache:
+          keys:
+            - yarn-packages-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - yarn-packages-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-
+            - yarn-packages-{{ .Environment.CACHE_VERSION }}-
+  save-cache:
+    description: Restores cache
+    steps:
+      - save_cache:
+          paths:
+            - image.tar.gz
+          key: yarn-packages-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ checksum "yarn.lock" }}
 jobs:
   build-and-test:
     executor:
-      name: node/default
+      name: docker/docker
+    environment:
+      DOCKER_BUILDKIT: "1"
     steps:
       - checkout
-      - node/with-cache:
-          steps:
-            - run: npm install
-            - run: npm test
+      - restore_cache
+      - run:
+          name: Load docker image if exists
+          command: |
+            [ -f /etc/resolv.conf ] && docker load -i image.tar.gz
+      - run:
+          name: Build Deps
+          command: |
+            docker build -t josephyi/orcinus-orca:deps --target deps .
+      - run:
+          name: Save cacheable
+          command: |
+            docker save josephyi/orcinus-orca:deps | gzip > image.tar.gz
+      - save-cache
+      # - node/with-cache:
+      #     steps:
+      #       - run: npm install
+      #       - run: npm test
   build-docker-image:
     executor:
       name: docker/docker
