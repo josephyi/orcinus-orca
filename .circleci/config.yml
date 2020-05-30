@@ -39,7 +39,7 @@ jobs:
       - run:
           name: Load docker image if exists
           command: |
-            [ -f /etc/resolv.conf ] && docker load -i image.tar.gz
+            [ -f image.tar.gz ] && docker load -i image.tar.gz
       - run:
           name: Build Deps
           command: |
