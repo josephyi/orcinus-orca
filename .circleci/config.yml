@@ -46,19 +46,19 @@ jobs:
           name: Build Deps
           command: |
             docker build \
-            --cache-from josephyi/orcinus-orca:deps \
+            --cache-from josephyi/orcinus-orca:build_base \
             --build-arg BUILDKIT_INLINE_CACHE=1 \
             --progress=plain \
-            --target deps \
-            -t josephyi/orcinus-orca:deps \
+            --target build_base \
+            -t josephyi/orcinus-orca:build_base \
             .
+      - run:
+          name: Run tests
+          command: docker run -it josephyi/orcinus-orca:build_base yarn test
       - run:
           name: Save cacheable
           command: |
-            docker save josephyi/orcinus-orca:deps | gzip > image.tar.gz
-      - run:
-          name: Run tests
-          command: docker run -it -v $(pwd)/src:/app/src josephyi/orcinus-orca:deps yarn test 
+            docker save josephyi/orcinus-orca:build_base | gzip > image.tar.gz
       - save-cache
       # - node/with-cache:
       #     steps:
