@@ -58,7 +58,7 @@ jobs:
             docker save josephyi/orcinus-orca:deps | gzip > image.tar.gz
       - run:
           name: Run tests
-          command: docker run -it josephyi/orcinus-orca:deps yarn test 
+          command: docker run -it -v $(pwd)/src:/app/src josephyi/orcinus-orca:deps yarn test 
       - save-cache
       # - node/with-cache:
       #     steps:
