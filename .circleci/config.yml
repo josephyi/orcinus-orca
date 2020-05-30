@@ -36,13 +36,12 @@ jobs:
     steps:
       - checkout
       - restore-cache
+      - setup_remote_docker:
+          version: 19.03.8
       - run:
           name: Load docker image if exists
           command: |
-            [ -f image.tar.gz ] && docker load -i $(pwd)/image.tar.gz || echo "No cached image found"
-      - run: ls -al
-      - setup_remote_docker:
-          version: 19.03.8
+            [ -f image.tar.gz ] && docker load -i image.tar.gz || echo "No cached image found"
       - run:
           name: Build Deps
           command: |
