@@ -43,7 +43,7 @@ jobs:
           command: |
             [ -f image.tar.gz ] && docker load -i image.tar.gz || echo "No cached image found"
       - run:
-          name: Build Deps
+          name: Build Base
           command: |
             docker build \
             --cache-from josephyi/orcinus-orca:build_base \
@@ -60,10 +60,10 @@ jobs:
           command: |
             docker save josephyi/orcinus-orca:build_base | gzip > image.tar.gz
       - save-cache
-      # - node/with-cache:
-      #     steps:
-      #       - run: npm install
-      #       - run: npm test
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./image.tar.gz
   build-docker-image:
     executor:
       name: docker/docker
@@ -76,9 +76,18 @@ jobs:
           version: 19.03.8
       - attach_workspace:
           at: /tmp/workspace
-      - docker/build:
-          image: $IMAGE_NAME
-          extra_build_args: --progress=plain
+      - run:
+          name: Load archived Docker image
+          command: docker load -i /tmp/workspace/image.tar.gz
+      - run:
+          name: Build Docker Image
+          command: |
+            docker build \
+            --cache-from josephyi/orcinus-orca:build_base \
+            --build-arg BUILDKIT_INLINE_CACHE=1 \
+            --progress=plain \
+            -t $IMAGE_NAME \
+            .
       - run:
           name: Archive Docker image
           command: docker save $IMAGE_NAME | gzip > image.tar.gz
@@ -111,7 +120,7 @@ workflows:
   build-and-test:
     jobs:
       - build-and-test
-      # - build-docker-image
+      - build-docker-image
       # - publish-image:
       #     requires:
       #       - build-and-test

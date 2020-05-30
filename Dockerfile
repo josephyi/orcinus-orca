@@ -11,7 +11,6 @@ COPY yarn.lock .
 RUN yarn install --frozen-lockfile --production --cache-folder ${WORKDIR}/.cache
 
 FROM prod_deps as deps
-ARG WORKDIR
 RUN yarn install --frozen-lockfile
 
 FROM deps as build_base
