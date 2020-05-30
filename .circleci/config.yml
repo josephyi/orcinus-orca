@@ -39,14 +39,14 @@ jobs:
       - run:
           name: Load docker image if exists
           command: |
-            [ -f image.tar.gz ] && docker load -i image.tar.gz || echo "No cached image found"
+            [ -f image.tar.gz ] && docker load -i $(pwd)/image.tar.gz || echo "No cached image found"
       - run: ls -al
       - setup_remote_docker:
           version: 19.03.8
       - run:
           name: Build Deps
           command: |
-            docker build -t --progress=plain josephyi/orcinus-orca:deps --target deps .
+            docker build --progress=plain -t josephyi/orcinus-orca:deps --target deps .
       - run:
           name: Save cacheable
           command: |
