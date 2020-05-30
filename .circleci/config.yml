@@ -40,6 +40,8 @@ jobs:
           name: Load docker image if exists
           command: |
             [ -f image.tar.gz ] && docker load -i image.tar.gz || echo "No cached image found"
+      - setup_remote_docker:
+          version: 19.03.8
       - run:
           name: Build Deps
           command: |
