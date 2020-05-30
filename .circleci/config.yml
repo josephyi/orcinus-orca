@@ -39,7 +39,7 @@ jobs:
       - run:
           name: Load docker image if exists
           command: |
-            [ -f image.tar.gz ] && docker load -i image.tar.gz
+            [ -f image.tar.gz ] && docker load -i image.tar.gz || echo "No cached image found"
       - run:
           name: Build Deps
           command: |
