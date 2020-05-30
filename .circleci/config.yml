@@ -102,11 +102,11 @@ workflows:
   build-and-test:
     jobs:
       - build-and-test
-      - build-docker-image
-      - publish-image:
-          requires:
-            - build-and-test
-            - build-docker-image
+      # - build-docker-image
+      # - publish-image:
+      #     requires:
+      #       - build-and-test
+      #       - build-docker-image
   deploy:
     jobs:
       - approve:
