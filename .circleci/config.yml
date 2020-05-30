@@ -35,7 +35,7 @@ jobs:
       DOCKER_BUILDKIT: "1"
     steps:
       - checkout
-      - restore_cache
+      - restore-cache
       - run:
           name: Load docker image if exists
           command: |
