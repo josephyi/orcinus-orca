@@ -45,7 +45,7 @@ jobs:
       - run:
           name: Build Deps
           command: |
-            docker build --cache-from deps --progress=plain -t deps --target deps .
+            docker build --cache-from josephyi/orcinus-orca:deps --progress=plain -t josephyi/orcinus-orca:deps --target deps .
       - run:
           name: Save cacheable
           command: |
