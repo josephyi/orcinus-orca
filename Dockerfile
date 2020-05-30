@@ -1,11 +1,17 @@
+# syntax = docker/dockerfile:experimental
 ARG BASE_IMAGE=node:14.3-alpine
 FROM ${BASE_IMAGE} as prod_deps
+WORKDIR /app
 COPY package.json .
 COPY yarn.lock .
-RUN yarn install --frozen-lockfile --production
+RUN --mount=type=cache,target=/app/.cache/yarn \
+    --mount=type=cache,target=/app/node_modules \
+    yarn install --frozen-lockfile --production --cache-folder .cache
 
 FROM prod_deps as deps
-RUN yarn install --frozen-lockfile
+RUN --mount=type=cache,target=/app/.cache/yarn \
+    --mount=type=cache,target=/app/node_modules \
+    yarn install --frozen-lockfile --cache-folder .cache
 
 FROM deps as builder
 COPY src .
