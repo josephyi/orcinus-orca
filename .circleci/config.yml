@@ -1,7 +1,6 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@1.1.6
   docker: circleci/docker@1.0.1
 commands:
   deploy-by-tag:
@@ -14,17 +13,27 @@ commands:
       - run: echo "Deploying << parameters.tag >>"
 jobs:
   build-and-test:
-    executor:
-      name: node/default
+    docker:
+      - image: cimg/node:14.3.0
+    working_directory: /mnt/ramdisk
     steps:
       - checkout
-      - node/with-cache:
-          steps:
-            - run: npm install
-            - run: npm test
+      - restore_cache:
+          keys:
+            - yarn-packages-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ checksum "yarn.lock" }}
+            - yarn-packages-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-
+            - yarn-packages-{{ .Environment.CACHE_VERSION }}-
+      - run: yarn install --frozen-lockfile --cache-folder .cache
+      - run: yarn test
+      - save_cache:
+          paths:
+            - .cache
+            - node_modules
+          key: yarn-packages-{{ .Environment.CACHE_VERSION }}-{{ .Branch }}-{{ checksum "yarn.lock" }}
   build-docker-image:
     executor:
       name: docker/docker
+    working_directory: /mnt/ramdisk
     environment:
       DOCKER_BUILDKIT: "1"
       IMAGE_NAME: "josephyi/orcinus-orca"
@@ -33,7 +42,7 @@ jobs:
       - setup_remote_docker:
           version: 19.03.8
       - attach_workspace:
-          at: /tmp/workspace
+          at: /mnt/ramdisk/workspace
       - docker/build:
           image: $IMAGE_NAME
           extra_build_args: --progress=plain
@@ -50,13 +59,13 @@ jobs:
       IMAGE_NAME: "josephyi/orcinus-orca"
     steps:
       - attach_workspace:
-          at: /tmp/workspace
+          at: /mnt/ramdisk/workspace
       - setup_remote_docker:
           version: 19.03.8
       - docker/check
       - run:
           name: Load archived Docker image
-          command: docker load -i /tmp/workspace/image.tar.gz
+          command: docker load -i /mnt/ramdisk/workspace/image.tar.gz
       - docker/push:
           image: $IMAGE_NAME
   deploy-by-tag:
