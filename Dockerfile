@@ -8,23 +8,20 @@ ARG WORKDIR
 WORKDIR ${WORKDIR}
 COPY package.json .
 COPY yarn.lock .
-RUN --mount=type=cache,target=${WORKDIR}/.cache/yarn \
-    --mount=type=cache,target=${WORKDIR}/node_modules \
-    yarn install --frozen-lockfile --production --cache-folder ${WORKDIR}/.cache
+RUN yarn install --frozen-lockfile --production
 
 FROM prod_deps as deps
-ARG WORKDIR
-RUN --mount=type=cache,target=${WORKDIR}.cache/yarn \
-    --mount=type=cache,target=${WORKDIR}/node_modules \
-    yarn install --frozen-lockfile --cache-folder ${WORKDIR}/.cache
+RUN yarn install --frozen-lockfile
 
-FROM deps as builder
+FROM deps as build_base
 COPY src ./src
 COPY tsconfig.json .
 COPY tsconfig.build.json .
+
+FROM build_base as builder
 RUN yarn build
 
-FROM builder as runner
+FROM ${BASE_IMAGE} as runner
 ARG USER
 ARG WORKDIR
 WORKDIR ${WORKDIR}
