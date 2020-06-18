@@ -97,7 +97,7 @@ jobs:
       - attach_workspace:
           at: /mnt/ramdisk/workspace
       - run:
-          name: Install trivy
+          name: Trivy
           command: |
             VERSION=$(
                 curl --silent "https://api.github.com/repos/aquasecurity/trivy/releases/latest" | \
@@ -107,10 +107,7 @@ jobs:
 
             wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-64bit.tar.gz
             tar zxvf trivy_${VERSION}_Linux-64bit.tar.gz
-            mv trivy /usr/local/bin
-      - run:
-          name: Scan image
-          command: trivy --exit-code 0 --no-progress image --input ./image.tar.gz
+            ./trivy --exit-code 0 --no-progress image --input ./image.tar.gz      
   publish-image:
     docker:
       - image: cimg/base:stable
