@@ -107,7 +107,7 @@ jobs:
 
             wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-64bit.tar.gz
             tar zxvf trivy_${VERSION}_Linux-64bit.tar.gz
-            ./trivy --exit-code 0 --no-progress image --input ./image.tar.gz      
+            ./trivy --exit-code 0 --no-progress image --input /mnt/ramdisk/workspace/image.tar.gz      
   publish-image:
     docker:
       - image: cimg/base:stable
