@@ -95,7 +95,7 @@ jobs:
     working_directory: /mnt/ramdisk
     steps:
       - attach_workspace:
-        at: /mnt/ramdisk/workspace
+          at: /mnt/ramdisk/workspace
       - run:
           name: Install trivy
           command: |
@@ -159,10 +159,10 @@ workflows:
       - scan-image
       - publish-image:
           requires:
-            - scan-image
+            - build-docker-image
       - publish-image-gh:
           requires:
-            - scan-image
+            - build-docker-image
   deploy:
     jobs:
       - approve:
