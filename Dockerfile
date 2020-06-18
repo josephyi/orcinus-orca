@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:experimental
-ARG BASE_IMAGE=node:14.3-alpine
+ARG BASE_IMAGE=node:14-buster-slim
 ARG WORKDIR=/app
 ARG USER=node
 
