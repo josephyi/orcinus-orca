@@ -89,6 +89,29 @@ jobs:
           root: .
           paths:
             - ./image.tar.gz
+  scan-image:
+    docker:
+      - image: cimg/base:stable
+    working_directory: /mnt/ramdisk
+    steps:
+      - attach_workspace:
+        at: /mnt/ramdisk/workspace
+      - run:
+          name: Install trivy
+          command: |
+            apk add --update-cache --upgrade curl rpm
+            VERSION=$(
+                curl --silent "https://api.github.com/repos/aquasecurity/trivy/releases/latest" | \
+                grep '"tag_name":' | \
+                sed -E 's/.*"v([^"]+)".*/\1/'
+            )
+
+            wget https://github.com/aquasecurity/trivy/releases/download/v${VERSION}/trivy_${VERSION}_Linux-64bit.tar.gz
+            tar zxvf trivy_${VERSION}_Linux-64bit.tar.gz
+            mv trivy /usr/local/bin
+      - run:
+          name: Scan image
+          command: trivy --exit-code 0 --no-progress image --input ./image.tar.gz
   publish-image:
     docker:
       - image: cimg/base:stable
