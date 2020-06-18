@@ -156,12 +156,13 @@ workflows:
     jobs:
       - build-and-test
       - build-docker-image
+      - scan-image
       - publish-image:
           requires:
-            - build-docker-image
+            - scan-image
       - publish-image-gh:
           requires:
-            - build-docker-image
+            - scan-image
   deploy:
     jobs:
       - approve:
