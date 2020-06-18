@@ -99,7 +99,6 @@ jobs:
       - run:
           name: Install trivy
           command: |
-            apk add --update-cache --upgrade curl rpm
             VERSION=$(
                 curl --silent "https://api.github.com/repos/aquasecurity/trivy/releases/latest" | \
                 grep '"tag_name":' | \
@@ -156,13 +155,15 @@ workflows:
     jobs:
       - build-and-test
       - build-docker-image
-      - scan-image
+      - scan-image:
+          requires:
+            - build-docker-image
       - publish-image:
           requires:
-            - build-docker-image
+            - scan-image
       - publish-image-gh:
           requires:
-            - build-docker-image
+            - scan-image
   deploy:
     jobs:
       - approve:
