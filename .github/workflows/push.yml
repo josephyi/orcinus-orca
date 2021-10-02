@@ -45,7 +45,6 @@ jobs:
         with:
           context: .
           push: true
-          outputs: type=docker
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
