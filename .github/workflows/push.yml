@@ -8,6 +8,7 @@ env:
 
 jobs:
   build:
+    name: 🛠️ Build 🛠️
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -22,9 +23,9 @@ jobs:
         run: yarn test
 
   dockerize:
-    runs-on: ubuntu-latest
     name: 🐳 Dockerize 🐳
     needs: [build]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Log in to the Container registry
